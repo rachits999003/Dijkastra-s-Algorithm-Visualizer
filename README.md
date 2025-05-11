@@ -36,12 +36,12 @@ Visit the [live demo](https://algorithmvisualizerbyrachit.netlify.app/) to use t
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/graph-algorithm-visualizer.git
+   git clone https://github.com/rachits999003/Dijkastra-s-Algorithm-Visualizer.git
    ```
 
 2. Navigate to the project directory:
    ```bash
-   cd graph-algorithm-visualizer
+   cd Dijkastra-s-Algorithm-Visualizer
    ```
 
 3. Open `index.html` in your web browser:
