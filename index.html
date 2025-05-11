@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithm Visualizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .control-panel {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .visualization-area {
+            flex: 2;
+            min-width: 500px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .canvas-container {
+            flex: 3;
+            position: relative;
+            min-height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .info-panel {
+            flex: 1;
+            min-height: 150px;
+            margin-top: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .edge-input {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+        .edge-input input {
+            flex: 1;
+        }
+        .remove-btn {
+            background-color: #f44336;
+            width: auto;
+            padding: 8px 12px;
+        }
+        .add-edge-btn {
+            background-color: #2196F3;
+        }
+        .code {
+            font-family: monospace;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            display: inline-block;
+            margin-right: 5px;
+            border: 1px solid #ccc;
+        }
+        .complexity-info {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        .slider-container {
+            margin-top: 10px;
+        }
+        .slider-container label {
+            display: inline-block;
+            width: 100%;
+        }
+        #speedRange {
+            width: 100%;
+        }
+        #complexity {
+            font-weight: bold;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .controls button {
+            flex: 1;
+        }
+        #stepBackward {
+            background-color: #ff9800;
+        }
+        #stepForward {
+            background-color: #2196F3;
+        }
+        #reset {
+            background-color: #f44336;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 5px;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Algorithm Visualizer</h1>
+            <p>Visualize graph algorithms step by step</p>
+        </div>
+        
+        <div class="flex-container">
+            <div class="control-panel">
+                <div class="form-group">
+                    <label for="algorithmSelect">Algorithm:</label>
+                    <select id="algorithmSelect">
+                        <option value="dijkstra">Dijkstra's Algorithm</option>
+                        <!-- Add more algorithms here -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Graph Setup:</label>
+                    <div id="edgeInputs">
+                        <div class="edge-input">
+                            <input type="text" placeholder="From" class="from-node">
+                            <input type="text" placeholder="To" class="to-node">
+                            <input type="number" placeholder="Weight" class="weight" min="1">
+                            <button class="remove-btn">×</button>
+                        </div>
+                    </div>
+                    <button id="addEdgeBtn" class="add-edge-btn">Add Edge</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="startNode">Start Node:</label>
+                    <input type="text" id="startNode" placeholder="Enter start node">
+                </div>
+                
+                <div class="form-group">
+                    <label for="endNode">End Node (optional):</label>
+                    <input type="text" id="endNode" placeholder="Enter end node (optional)">
+                </div>
+                
+                <div class="slider-container">
+                    <label for="speedRange">Animation Speed: <span id="speedValue">500</span>ms</label>
+                    <input type="range" id="speedRange" min="100" max="2000" value="500" step="100">
+                </div>
+                
+                <button id="visualizeBtn">Visualize</button>
+                
+                <div class="controls">
+                    <button id="stepBackward" disabled>Previous</button>
+                    <button id="stepForward" disabled>Next</button>
+                    <button id="reset" disabled>Reset</button>
+                </div>
+                
+                <div id="status" class="status hidden"></div>
+            </div>
+            
+            <div class="visualization-area">
+                <div class="canvas-container">
+                    <canvas id="graphCanvas"></canvas>
+                </div>
+                
+                <div class="info-panel">
+                    <h3>Algorithm Information</h3>
+                    <div id="algorithmInfo">
+                        <p>Select an algorithm to see information.</p>
+                    </div>
+                    
+                    <div class="complexity-info">
+                        <h4>Algorithm Complexity:</h4>
+                        <p id="complexity">Select an algorithm to see complexity information.</p>
+                    </div>
+                    
+                    <div class="legend">
+                        <h4>Legend:</h4>
+                        <div id="legendContainer">
+                            <!-- Legend items will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.23.0/cytoscape.min.js"></script>
+    <script>
+        // Algorithm Visualizer Class
+        class AlgorithmVisualizer {
+            constructor() {
+                this.cy = null;
+                this.algorithm = null;
+                this.frames = [];
+                this.currentFrame = -1;
+                this.animationSpeed = 500;
+                this.animationInterval = null;
+                this.isPlaying = false;
+                
+                // Initialize the visualizer
+                this.initCanvas();
+                this.initEventListeners();
+                this.updateAlgorithmInfo();
+                this.createLegend();
+            }
+            
+            initCanvas() {
+                const container = document.querySelector('.canvas-container');
+                
+                this.cy = cytoscape({
+                    container: container,
+                    style: [
+                        {
+                            selector: 'node',
+                            style: {
+                                'background-color': 'skyblue',
+                                'label': 'data(id)',
+                                'text-valign': 'center',
+                                'text-halign': 'center',
+                                'width': 40,
+                                'height': 40,
+                                'font-size': 12
+                            }
+                        },
+                        {
+                            selector: 'edge',
+                            style: {
+                                'width': 2,
+                                'line-color': 'black',
+                                'target-arrow-color': 'black',
+                                'target-arrow-shape': 'triangle',
+                                'curve-style': 'bezier',
+                                'label': 'data(weight)',
+                                'font-size': 10
+                            }
+                        },
+                        {
+                            selector: 'node.visited',
+                            style: {
+                                'background-color': 'red'
+                            }
+                        },
+                        {
+                            selector: 'node.current',
+                            style: {
+                                'background-color': 'green'
+                            }
+                        },
+                        {
+                            selector: 'node.path',
+                            style: {
+                                'background-color': 'yellow'
+                            }
+                        },
+                        {
+                            selector: 'edge.considering',
+                            style: {
+                                'line-color': 'cyan',
+                                'target-arrow-color': 'cyan',
+                                'width': 3
+                            }
+                        },
+                        {
+                            selector: 'edge.path',
+                            style: {
+                                'line-color': 'magenta',
+                                'target-arrow-color': 'magenta',
+                                'width': 4
+                            }
+                        },
+                        {
+                            selector: 'node.distance',
+                            style: {
+                                'label': function(ele) {
+                                    return ele.data('id') + '\nd=' + ele.data('distance');
+                                }
+                            }
+                        }
+                    ],
+                    layout: {
+                        name: 'cose',
+                        padding: 30
+                    }
+                });
+            }
+            
+            initEventListeners() {
+                // Add edge button
+                document.getElementById('addEdgeBtn').addEventListener('click', () => {
+                    this.addEdgeInput();
+                });
+                
+                // Remove edge button
+                document.getElementById('edgeInputs').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('remove-btn')) {
+                        const edgeInputs = document.querySelectorAll('.edge-input');
+                        if (edgeInputs.length > 1) {
+                            e.target.parentElement.remove();
+                        }
+                    }
+                });
+                
+                // Algorithm selection
+                document.getElementById('algorithmSelect').addEventListener('change', () => {
+                    this.updateAlgorithmInfo();
+                });
+                
+                // Visualization button
+                document.getElementById('visualizeBtn').addEventListener('click', () => {
+                    this.startVisualization();
+                });
+                
+                // Speed slider
+                document.getElementById('speedRange').addEventListener('input', (e) => {
+                    this.animationSpeed = parseInt(e.target.value);
+                    document.getElementById('speedValue').textContent = this.animationSpeed;
+                });
+                
+                // Control buttons
+                document.getElementById('stepBackward').addEventListener('click', () => {
+                    this.stopAnimation();
+                    this.prevFrame();
+                });
+                
+                document.getElementById('stepForward').addEventListener('click', () => {
+                    this.stopAnimation();
+                    this.nextFrame();
+                });
+                
+                document.getElementById('reset').addEventListener('click', () => {
+                    this.resetVisualization();
+                });
+            }
+            
+            addEdgeInput() {
+                const edgeInput = document.createElement('div');
+                edgeInput.className = 'edge-input';
+                edgeInput.innerHTML = `
+                    <input type="text" placeholder="From" class="from-node">
+                    <input type="text" placeholder="To" class="to-node">
+                    <input type="number" placeholder="Weight" class="weight" min="1">
+                    <button class="remove-btn">×</button>
+                `;
+                document.getElementById('edgeInputs').appendChild(edgeInput);
+            }
+            
+            createGraph() {
+                this.cy.elements().remove();
+                
+                const edgeInputs = document.querySelectorAll('.edge-input');
+                const addedNodes = new Set();
+                
+                edgeInputs.forEach(input => {
+                    const fromNode = input.querySelector('.from-node').value.trim();
+                    const toNode = input.querySelector('.to-node').value.trim();
+                    const weight = parseInt(input.querySelector('.weight').value) || 1;
+                    
+                    if (fromNode && toNode) {
+                        // Add nodes if they don't exist
+                        if (!addedNodes.has(fromNode)) {
+                            this.cy.add({ data: { id: fromNode } });
+                            addedNodes.add(fromNode);
+                        }
+                        
+                        if (!addedNodes.has(toNode)) {
+                            this.cy.add({ data: { id: toNode } });
+                            addedNodes.add(toNode);
+                        }
+                        
+                        // Add edge
+                        this.cy.add({
+                            data: {
+                                id: `${fromNode}-${toNode}`,
+                                source: fromNode,
+                                target: toNode,
+                                weight: weight
+                            }
+                        });
+                    }
+                });
+                
+                // Apply layout
+                const layout = this.cy.layout({ name: 'cose', padding: 30 });
+                layout.run();
+            }
+            
+            updateAlgorithmInfo() {
+                const algorithm = document.getElementById('algorithmSelect').value;
+                let infoHTML = '';
+                let complexityHTML = '';
+                
+                if (algorithm === 'dijkstra') {
+                    infoHTML = `
+                        <p>Dijkstra's algorithm is a graph search algorithm that solves the single-source 
+                        shortest path problem for a graph with non-negative edge weights.</p>
+                        
+                        <p>The algorithm works by keeping track of a set of nodes for which the shortest 
+                        path from the source has been found. At each step, it selects the node with the 
+                        minimum distance from the set of unvisited nodes and updates the distances to its 
+                        neighbors if a shorter path is found.</p>
+                    `;
+                    
+                    complexityHTML = `
+                        <b>Time Complexity:</b> O((V + E) log V)<br>
+                        <b>Space Complexity:</b> O(V)<br>
+                        <small>V: number of vertices, E: number of edges</small>
+                    `;
+                }
+                // Add more algorithms here
+                
+                document.getElementById('algorithmInfo').innerHTML = infoHTML;
+                document.getElementById('complexity').innerHTML = complexityHTML;
+            }
+            
+            createLegend() {
+                const legendItems = [
+                    { color: 'skyblue', label: 'Unvisited Node' },
+                    { color: 'green', label: 'Current Node' },
+                    { color: 'red', label: 'Visited Node' },
+                    { color: 'yellow', label: 'Path Node' },
+                    { color: 'black', label: 'Normal Edge' },
+                    { color: 'cyan', label: 'Edge Being Considered' },
+                    { color: 'magenta', label: 'Path Edge' }
+                ];
+                
+                const legendContainer = document.getElementById('legendContainer');
+                legendContainer.innerHTML = '';
+                
+                legendItems.forEach(item => {
+                    const legendItem = document.createElement('div');
+                    legendItem.className = 'legend-item';
+                    legendItem.innerHTML = `
+                        <div class="legend-color" style="background-color: ${item.color}"></div>
+                        <span>${item.label}</span>
+                    `;
+                    legendContainer.appendChild(legendItem);
+                });
+            }
+            
+            startVisualization() {
+                this.resetVisualization();
+                this.createGraph();
+                
+                const algorithm = document.getElementById('algorithmSelect').value;
+                const startNode = document.getElementById('startNode').value.trim();
+                const endNode = document.getElementById('endNode').value.trim() || null;
+                
+                if (!startNode) {
+                    this.showStatus('Please enter a start node', 'error');
+                    return;
+                }
+                
+                const startNodeExists = this.cy.getElementById(startNode).length > 0;
+                if (!startNodeExists) {
+                    this.showStatus('Start node does not exist in the graph', 'error');
+                    return;
+                }
+                
+                if (endNode && this.cy.getElementById(endNode).length === 0) {
+                    this.showStatus('End node does not exist in the graph', 'error');
+                    return;
+                }
+                
+                if (algorithm === 'dijkstra') {
+                    this.runDijkstra(startNode, endNode);
+                }
+                // Add more algorithms here
+                
+                // Enable controls
+                document.getElementById('stepBackward').disabled = false;
+                document.getElementById('stepForward').disabled = false;
+                document.getElementById('reset').disabled = false;
+                
+                // Show first frame
+                this.currentFrame = 0;
+                this.showFrame(0);
+                
+                this.showStatus('Visualization ready. Use the controls to navigate.', 'success');
+            }
+            
+            runDijkstra(startNode, endNode) {
+                // Reset frames
+                this.frames = [];
+                
+                // Initialize data structures
+                const nodes = this.cy.nodes();
+                const distances = {};
+                const previous = {};
+                const visited = new Set();
+                const queue = [];
+                
+                // Initialize distances and previous
+                nodes.forEach(node => {
+                    const nodeId = node.id();
+                    distances[nodeId] = nodeId === startNode ? 0 : Infinity;
+                    previous[nodeId] = null;
+                    node.data('distance', nodeId === startNode ? 0 : '∞');
+                });
+                
+                // Initialize priority queue with start node
+                queue.push({ node: startNode, distance: 0 });
+                
+                // Create initial frame
+                this.frames.push(this.createFrame({
+                    current: startNode,
+                    visited: [],
+                    considering: [],
+                    distances: {...distances},
+                    previous: {...previous},
+                    message: `Starting Dijkstra's algorithm from node ${startNode}`
+                }));
+                
+                // Run Dijkstra's algorithm
+                while (queue.length > 0) {
+                    // Sort and get node with minimum distance
+                    queue.sort((a, b) => a.distance - b.distance);
+                    const current = queue.shift();
+                    const currentNodeId = current.node;
+                    
+                    // Skip if already visited
+                    if (visited.has(currentNodeId)) continue;
+                    
+                    // Add to visited
+                    visited.add(currentNodeId);
+                    
+                    // Create frame for current node selection
+                    this.frames.push(this.createFrame({
+                        current: currentNodeId,
+                        visited: Array.from(visited),
+                        considering: [],
+                        distances: {...distances},
+                        previous: {...previous},
+                        message: `Visiting node ${currentNodeId} with distance ${distances[currentNodeId]}`
+                    }));
+                    
+                    // If end node is reached, break
+                    if (endNode && currentNodeId === endNode) {
+                        break;
+                    }
+                    
+                    // Process neighbors
+                    const neighbors = this.cy.getElementById(currentNodeId).neighborhood('node');
+                    
+                    for (let i = 0; i < neighbors.length; i++) {
+                        const neighbor = neighbors[i];
+                        const neighborId = neighbor.id();
+                        
+                        // Skip if already visited
+                        if (visited.has(neighborId)) continue;
+                        
+                        // Find edge weight
+                        const edge = this.cy.getElementById(`${currentNodeId}-${neighborId}`);
+                        const weight = edge.length ? edge.data('weight') : 
+                                      this.cy.getElementById(`${neighborId}-${currentNodeId}`).data('weight');
+                        
+                        // Calculate new distance
+                        const alt = distances[currentNodeId] + weight;
+                        
+                        // Create frame for edge consideration
+                        const consideringEdge = edge.length ? 
+                                              `${currentNodeId}-${neighborId}` : 
+                                              `${neighborId}-${currentNodeId}`;
+                        
+                        this.frames.push(this.createFrame({
+                            current: currentNodeId,
+                            visited: Array.from(visited),
+                            considering: [consideringEdge],
+                            distances: {...distances},
+                            previous: {...previous},
+                            message: `Considering edge from ${currentNodeId} to ${neighborId} with weight ${weight}`
+                        }));
+                        
+                        // Update distance if shorter path found
+                        if (alt < distances[neighborId]) {
+                            distances[neighborId] = alt;
+                            previous[neighborId] = currentNodeId;
+                            neighbor.data('distance', alt);
+                            
+                            // Add to queue for processing
+                            queue.push({ node: neighborId, distance: alt });
+                            
+                            this.frames.push(this.createFrame({
+                                current: currentNodeId,
+                                visited: Array.from(visited),
+                                considering: [consideringEdge],
+                                distances: {...distances},
+                                previous: {...previous},
+                                message: `Found shorter path to ${neighborId}: ${alt}`
+                            }));
+                        } else {
+                            this.frames.push(this.createFrame({
+                                current: currentNodeId,
+                                visited: Array.from(visited),
+                                considering: [consideringEdge],
+                                distances: {...distances},
+                                previous: {...previous},
+                                message: `No shorter path to ${neighborId} found`
+                            }));
+                        }
+                    }
+                }
+                
+                // Reconstruct path if end node is specified
+                if (endNode && previous[endNode] !== null) {
+                    const path = [];
+                    let current = endNode;
+                    
+                    while (current !== null) {
+                        path.unshift(current);
+                        current = previous[current];
+                    }
+                    
+                    // Create frame for final path
+                    const pathEdges = [];
+                    for (let i = 0; i < path.length - 1; i++) {
+                        const edge = this.cy.getElementById(`${path[i]}-${path[i+1]}`);
+                        if (edge.length) {
+                            pathEdges.push(`${path[i]}-${path[i+1]}`);
+                        } else {
+                            pathEdges.push(`${path[i+1]}-${path[i]}`);
+                        }
+                    }
+                    
+                    this.frames.push(this.createFrame({
+                        current: null,
+                        visited: Array.from(visited),
+                        path: path,
+                        pathEdges: pathEdges,
+                        distances: {...distances},
+                        previous: {...previous},
+                        message: `Shortest path from ${startNode} to ${endNode}: ${path.join(' → ')} (distance: ${distances[endNode]})`
+                    }));
+                }
+            }
+            
+            createFrame(frameData) {
+                return {
+                    current: frameData.current,
+                    visited: frameData.visited || [],
+                    considering: frameData.considering || [],
+                    path: frameData.path || [],
+                    pathEdges: frameData.pathEdges || [],
+                    distances: frameData.distances || {},
+                    previous: frameData.previous || {},
+                    message: frameData.message || ''
+                };
+            }
+            
+            showFrame(frameIndex) {
+                if (frameIndex < 0 || frameIndex >= this.frames.length) return;
+                
+                const frame = this.frames[frameIndex];
+                
+                // Reset all node and edge styles
+                this.cy.nodes().removeClass('visited current path');
+                this.cy.edges().removeClass('considering path');
+                
+                // Update node distances
+                this.cy.nodes().forEach(node => {
+                    const nodeId = node.id();
+                    const distance = frame.distances[nodeId];
+                    node.data('distance', distance === Infinity ? '∞' : distance);
+                });
+                
+                // Apply visited style
+                frame.visited.forEach(nodeId => {
+                    this.cy.getElementById(nodeId).addClass('visited');
+                });
+                
+                // Apply current node style
+                if (frame.current) {
+                    this.cy.getElementById(frame.current).removeClass('visited').addClass('current');
+                }
+                
+                // Apply considering edge style 
+                frame.considering.forEach(edgeId => {
+                    this.cy.getElementById(edgeId).addClass('considering');
+                });
+                
+                // Apply path styles
+                frame.path.forEach(nodeId => {
+                    this.cy.getElementById(nodeId).removeClass('visited current').addClass('path');
+                });
+                
+                frame.pathEdges.forEach(edgeId => {
+                    this.cy.getElementById(edgeId).removeClass('considering').addClass('path');
+                });
+                
+                // Update status message
+                this.showStatus(frame.message, 'info');
+                
+                // Update controls
+                document.getElementById('stepBackward').disabled = frameIndex === 0;
+                document.getElementById('stepForward').disabled = frameIndex === this.frames.length - 1;
+            }
+            
+            nextFrame() {
+                if (this.currentFrame < this.frames.length - 1) {
+                    this.currentFrame++;
+                    this.showFrame(this.currentFrame);
+                }
+            }
+            
+            prevFrame() {
+                if (this.currentFrame > 0) {
+                    this.currentFrame--;
+                    this.showFrame(this.currentFrame);
+                }
+            }
+            
+            playAnimation() {
+                if (this.isPlaying) return;
+                
+                this.isPlaying = true;
+                this.animationInterval = setInterval(() => {
+                    if (this.currentFrame < this.frames.length - 1) {
+                        this.nextFrame();
+                    } else {
+                        this.stopAnimation();
+                    }
+                }, this.animationSpeed);
+            }
+            
+            stopAnimation() {
+                if (this.animationInterval) {
+                    clearInterval(this.animationInterval);
+                    this.animationInterval = null;
+                }
+                this.isPlaying = false;
+            }
+            
+            resetVisualization() {
+                this.stopAnimation();
+                this.cy.nodes().removeClass('visited current path');
+                this.cy.edges().removeClass('considering path');
+                this.frames = [];
+                this.currentFrame = -1;
+                
+                document.getElementById('stepBackward').disabled = true;
+                document.getElementById('stepForward').disabled = true;
+                document.getElementById('reset').disabled = true;
+                
+                document.getElementById('status').classList.add('hidden');
+            }
+            
+            showStatus(message, type) {
+                const statusEl = document.getElementById('status');
+                statusEl.textContent = message;
+                statusEl.classList.remove('hidden');
+                
+                // Set color based on type
+                statusEl.style.backgroundColor = type === 'error' ? '#ffebee' : 
+                                               type === 'success' ? '#e8f5e9' : 
+                                               '#e3f2fd';
+                statusEl.style.color = type === 'error' ? '#c62828' : 
+                                     type === 'success' ? '#2e7d32' : 
+                                     '#1565c0';
+            }
+            
+            // Method to add new visualization algorithms
+            addAlgorithm(name, runFunction, infoHTML, complexityHTML) {
+                // Add option to select dropdown
+                const option = document.createElement('option');
+                option.value = name.toLowerCase().replace(/\s+/g, '_');
+                option.textContent = name;
+                document.getElementById('algorithmSelect').appendChild(option);
+                
+                // Store algorithm information
+                this[`run${name.replace(/\s+/g, '')}`] = runFunction;
+                
+                // Update algorithm info when selected
+                const algorithmSelect = document.getElementById('algorithmSelect');
+                const originalUpdateAlgorithmInfo = this.updateAlgorithmInfo;
+                
+                this.updateAlgorithmInfo = function() {
+                    originalUpdateAlgorithmInfo.call(this);
+                    
+                    if (algorithmSelect.value === option.value) {
+                        document.getElementById('algorithmInfo').innerHTML = infoHTML;
+                        document.getElementById('complexity').innerHTML = complexityHTML;
+                    }
+                };
+            }
+        }
+        
+        // Initialize visualizer when page is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.visualizer = new AlgorithmVisualizer();
+            
+            // Pre-fill some example data
+            const edgeData = [
+                ['A', 'B', 4],
+                ['A', 'C', 2],
+                ['B', 'C', 1],
+                ['B', 'D', 5],
+                ['C', 'D', 8],
+                ['D', 'E', 2],
+                ['E', 'F', 3]
+            ];
+            
+            // Add initial edge inputs
+            const edgeInputs = document.querySelectorAll('.edge-input');
+            edgeInputs[0].querySelector('.from-node').value = edgeData[0][0];
+            edgeInputs[0].querySelector('.to-node').value = edgeData[0][1];
+            edgeInputs[0].querySelector('.weight').value = edgeData[0][2];
+            
+            // Add remaining edges
+            for (let i = 1; i < edgeData.length; i++) {
+                window.visualizer.addEdgeInput();
+                const newInput = document.querySelectorAll('.edge-input')[i];
+                newInput.querySelector('.from-node').value = edgeData[i][0];
+                newInput.querySelector('.to-node').value = edgeData[i][1];
+                newInput.querySelector('.weight').value = edgeData[i][2];
+            }
+            
+            // Set default start node
+            document.getElementById('startNode').value = 'A';
+            document.getElementById('endNode').value = 'F';
+        });
+    </script>
+</body>
+</html>
