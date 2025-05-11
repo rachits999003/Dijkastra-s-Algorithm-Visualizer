@@ -2,7 +2,7 @@
 
 An interactive web-based application for visualizing graph algorithms with focus on pathfinding algorithms like Dijkstra's algorithm.
 
-![Graph Algorithm Visualizer Screenshot](https://api.placeholder.com/800/400)
+![Graph Algorithm Visualizer Screenshot](image.png)
 
 ## 🚀 Features
 
@@ -173,4 +173,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-Your Name - [@rachits999003](mailto:rachits999003@gmail.com) - email@example.com
+Your Name - [@rachits999003](mailto:rachits999003@gmail.com) - rachits999003@gmail.com
